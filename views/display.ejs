@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* CSS to make the video take up the entire viewport and hide overflow */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden; /* Hide scrollbars */
+        }
+        #videoPlayer {
+            position: fixed; /* Fixed position */
+            right: 0;
+            bottom: 0;
+            min-width: 100%; 
+            min-height: 100%;
+        }
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <div id="serialData" style="position:absolute; z-index:1000;"></div>
+    
+    <video id="videoPlayer"  autoplay loop muted>
+        <source src="/assets/video.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+  
+    <video id="videoPlayer"  autoplay loop muted>
+        <source src="" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+    <script>
+        const socket = io();
+        const videoPlayer = document.getElementById('videoPlayer');
+        const defaultVideo = "/assets/video.mp4"; // Path to your default video
+
+        function enterFullScreen(element) {
+            if(element.requestFullscreen) {
+                element.requestFullscreen();
+            } else if(element.mozRequestFullScreen) {
+                element.mozRequestFullScreen();
+            } else if(element.webkitRequestFullscreen) {
+                element.webkitRequestFullscreen();
+            } else if(element.msRequestFullscreen) {
+                element.msRequestFullscreen();
+            }
+        }
+
+        // Play the default video on load in fullscreen
+        videoPlayer.src = defaultVideo;
+        videoPlayer.load();
+        enterFullScreen(videoPlayer); // Make the video full screen on load
+
+        // Listen for the serialData event and update the HTML content
+        socket.on('serialData', data => {
+            // Update the serialData div content
+            // document.getElementById('serialData').innerText = `Received Serial Data: ${data}`;
+            
+            const videoMap = {
+                '1': "/assets/1.mp4",  
+                '4': '/assets/2.mp4', 
+                '3': '/assets/3.mp4', 
+                '6': '/assets/4.mp4',  
+                '7': '/assets/5.mp4', 
+                // ... other mappings
+            };
+
+            if (videoMap[data.trim()]) {
+                videoPlayer.src = videoMap[data.trim()];
+                videoPlayer.loop = false;
+                videoPlayer.load();
+                videoPlayer.play();
+                enterFullScreen(videoPlayer); // Request to play the video in full screen on play
+            }
+        });
+
+        videoPlayer.addEventListener('ended', () => {
+            videoPlayer.src = defaultVideo;
+            videoPlayer.loop = true;
+            videoPlayer.load();
+            videoPlayer.play();
+            enterFullScreen(videoPlayer); // Continue in full screen when returning to default video
+        });
+    </script>
+</body>
+</html>

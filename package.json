@@ -1,0 +1,20 @@
+{
+  "name": "int-floor",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "express-partial-response": "^1.0.4",
+    "multer": "^1.4.5-lts.1",
+    "serialport": "^12.0.0",
+    "socket.io": "^4.7.2"
+  }
+}
