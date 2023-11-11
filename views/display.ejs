@@ -10,6 +10,7 @@
             padding: 0;
             height: 100%;
             overflow: hidden; /* Hide scrollbars */
+            background-color: black;
         }
         #videoPlayer {
             position: fixed; /* Fixed position */
@@ -36,9 +37,11 @@
 
     <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
     <script>
+        
         const socket = io();
         const videoPlayer = document.getElementById('videoPlayer');
         const defaultVideo = "/assets/video.mp4"; // Path to your default video
+        const transitionDuration = 500; // Transition time in milliseconds
 
         function enterFullScreen(element) {
             if(element.requestFullscreen) {
@@ -56,7 +59,16 @@
         videoPlayer.src = defaultVideo;
         videoPlayer.load();
         enterFullScreen(videoPlayer); // Make the video full screen on load
+        function fadeOut(element, callback) {
+    element.style.transition = `opacity ${transitionDuration}ms`;
+    element.style.opacity = 0;
+    setTimeout(callback, transitionDuration); // Wait for the fade out to finish
+}
 
+function fadeIn(element) {
+    element.style.transition = `opacity ${transitionDuration}ms`;
+    element.style.opacity = 1;
+}
         // Listen for the serialData event and update the HTML content
         socket.on('serialData', data => {
             // Update the serialData div content
@@ -72,21 +84,27 @@
             };
 
             if (videoMap[data.trim()]) {
-                videoPlayer.src = videoMap[data.trim()];
-                videoPlayer.loop = false;
-                videoPlayer.load();
-                videoPlayer.play();
-                enterFullScreen(videoPlayer); // Request to play the video in full screen on play
-            }
-        });
-
-        videoPlayer.addEventListener('ended', () => {
-            videoPlayer.src = defaultVideo;
-            videoPlayer.loop = true;
+        fadeOut(videoPlayer, () => {
+            videoPlayer.src = videoMap[data.trim()];
+            videoPlayer.loop = false;
             videoPlayer.load();
-            videoPlayer.play();
-            enterFullScreen(videoPlayer); // Continue in full screen when returning to default video
+            videoPlayer.play().then(() => {
+                fadeIn(videoPlayer); // Fade in the new video
+            });
         });
+    }
+});
+
+videoPlayer.addEventListener('ended', () => {
+    fadeOut(videoPlayer, () => {
+        videoPlayer.src = defaultVideo;
+        videoPlayer.loop = true;
+        videoPlayer.load();
+        videoPlayer.play().then(() => {
+            fadeIn(videoPlayer); // Fade in the default video
+        });
+    });
+});
     </script>
 </body>
 </html>
